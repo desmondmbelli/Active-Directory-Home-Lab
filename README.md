@@ -1,6 +1,6 @@
 # Active Directory and User Provisioning Lab
 
-I built this lab as a stepping stone toward a career in Identity and Access Management (IAM). In this project I built a small company network from scratch in VirtualBox: a Windows Server 2025 domain controller, a Windows 11 workstation joined to the domain, and PowerShell scripts that onboard and offboard users from a CSV file. I then worked through the tasks a help desk handles every day: password resets, account lockouts and disabling leavers.
+In this project I built a small company network from scratch in VirtualBox: a Windows Server 2025 domain controller, a Windows 11 workstation joined to the domain, and PowerShell scripts that onboard and offboard users from a CSV file. I then worked through the tasks a help desk handles every day: password resets, account lockouts and disabling leavers.
 
 _**Inception State:**_ two empty virtual machines, two evaluation ISOs, and no network, domain, users or policies.
 
@@ -12,20 +12,6 @@ _**Completion State:**_ a working `lab.local` domain with a department OU struct
 
 _Olivia Carter, created by the provisioning script from one line of a CSV, signed in on the domain-joined workstation. Authenticated by DC01 and placed in the Sales security group automatically._
 
-# IAM Concepts Demonstrated
-
-| IAM concept | Where it shows up in this lab |
-|---|---|
-| **Joiner process (provisioning)** | [`03-New-ADUsersFromCSV.ps1`](scripts/03-New-ADUsersFromCSV.ps1) creates accounts from a CSV, the kind of feed an HR system would send, with consistent usernames and attributes ([Step 5](#step-5-provisioning-users-manually-and-from-a-csv)) |
-| **Leaver process (deprovisioning)** | [`04-Disable-ADUserOffboarding.ps1`](scripts/04-Disable-ADUserOffboarding.ps1) disables the account, removes all group access and moves it to a quarantine OU ([Step 10](#step-10-offboarding-a-leaver-with-powershell)) |
-| **Role-based access control (RBAC)** | Access is granted through one security group per department (`GG_Sales`, `GG_IT` …), not to individual users. New hires get their group automatically ([Step 4](#step-4-building-the-ou-structure-and-security-groups)) |
-| **Least privilege** | Users only get Domain Users plus their department group. The script never grants admin rights, and the built-in Administrator is the only privileged account |
-| **Authentication policy** | Password complexity enforced by the domain, temporary passwords that must be changed at first sign-in, and an account lockout policy set through Group Policy ([Step 9](#step-9-help-desk-tasks-password-reset-lockout-policy-and-unlock)) |
-| **Credential hygiene** | No passwords are stored in scripts, CSVs or logs. The temporary password is typed at run time and checked against policy before use |
-| **Audit trail** | Every provisioning run and every offboarding writes a CSV log of who was changed, what changed and who made the change ([`scripts/logs`](scripts/logs)). Offboarded accounts are stamped with the date and admin |
-| **Account lifecycle hygiene** | Leavers are disabled and kept for review instead of deleted. The orphaned accounts left by a failed run were found and removed with a targeted cleanup script ([Issue 4](#issue-4-the-provisioning-script-left-half-created-accounts)) |
-| **Directory and authentication services** | Active Directory as the identity store, DNS for locating the domain controller, and Kerberos sign-in from a domain-joined workstation ([Step 8](#step-8-signing-in-as-a-domain-user)) |
-
 # Technology Utilized
 - Oracle VirtualBox 7.2 (NAT Network)
 - Windows Server 2025 Standard Evaluation (Active Directory Domain Services, DNS, Group Policy)
@@ -34,7 +20,6 @@ _Olivia Carter, created by the provisioning script from one line of a CSV, signe
 - DISM, diskpart, bcdboot and bootsect for manual Windows deployment
 
 # Table of Contents
-- [IAM Concepts Demonstrated](#iam-concepts-demonstrated)
 - [Lab Design](#lab-design)
 - [Step 1) Building the Virtual Network and Domain Controller VM](#step-1-building-the-virtual-network-and-domain-controller-vm)
 - [Step 2) Preparing the Server: Name, Static IP and Time Zone](#step-2-preparing-the-server-name-static-ip-and-time-zone)
@@ -324,9 +309,7 @@ Run them on DC01 as a domain admin, in order. Each one explains its usage in the
 
 ### Next Steps
 
-- Extend the lab into hybrid identity: sync these users to Microsoft Entra ID with Entra Connect, then add MFA and Conditional Access
-- Add a mover process: a script that changes a user's department, OU and group membership in one step and logs the change
-- Run a periodic access review: report group memberships per department and flag accounts that haven't signed in for 90 days
 - Add a DHCP scope on DC01 so clients get IP and DNS settings automatically
 - Create a file share with department folders, permissioned through the `GG_` groups and mapped with Group Policy
 - Add a second domain controller for redundancy
+- Schedule a report of accounts that haven't signed in for 90 days
